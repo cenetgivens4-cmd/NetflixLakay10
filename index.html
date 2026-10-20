@@ -212,6 +212,7 @@
             overflow: hidden;
             cursor: pointer;
             transition: transform 0.2s;
+            position: relative;
         }
         .movie-card:hover {
             transform: scale(1.03);
@@ -237,6 +238,29 @@
             font-size: 9px;
             color: #aaa;
             margin-top: 2px;
+        }
+
+        /* Bouton 3 ti pwen yo (⋮) pou efase */
+        .movie-options-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .movie-options-btn:hover {
+            background: #e50914;
         }
 
         /* Modals */
@@ -315,7 +339,7 @@
             cursor: pointer;
         }
 
-        /* Lektè Videyo ak Bouton Tout Ekran (Fullscreen) */
+        /* Lektè Videyo Konbine */
         #player-screen {
             display: none;
             position: fixed;
@@ -342,10 +366,17 @@
             cursor: pointer;
             font-size: 12px;
         }
-        #player-screen video {
+        #mainVideo {
             width: 100%;
             max-height: 50vh;
             background: #000;
+            display: none;
+        }
+        #youtubeIframe {
+            width: 100%;
+            height: 50vh;
+            border: none;
+            display: none;
         }
         .fullscreen-action-bar {
             width: 100%;
@@ -429,7 +460,7 @@
 
     <header>
         <div class="header-top">
-            <button class="add-content-btn" onclick="openPinModal()">+ Ajoute Fim</button>
+            <button class="add-content-btn" onclick="openPinModal('add')">+ Ajoute Fim</button>
             <h1>Netflix Lakay</h1>
             <button class="settings-icon-btn" onclick="openSettings()">⚙️</button>
         </div>
@@ -465,11 +496,11 @@
         </div>
     </div>
 
-    <!-- Modal pou Antre PIN (Modpas la kache, pèsonn pa wè l) -->
+    <!-- Modal pou Antre PIN (Sekirize) -->
     <div class="modal" id="pinModal">
         <div class="modal-content">
             <h3 style="color:#e50914; margin-bottom:10px;">🔑 Sekirite Admin</h3>
-            <p style="font-size:12px; color:#ccc;">Antre kòd sekirite a pou w kontinye:</p>
+            <p style="font-size:12px; color:#ccc;" id="pinInstructionText">Antre kòd sekirite a pou w kontinye:</p>
             
             <input type="password" id="adminPinInput" placeholder="••••" style="text-align:center; font-size:18px; letter-spacing:5px;">
 
@@ -497,7 +528,7 @@
             <label for="image">Lyen Imaj / Afich (URL):</label>
             <input type="url" id="image" placeholder="https://...">
 
-            <label for="video">Lyen Videyo (URL):</label>
+            <label for="video">Lyen Videyo (URL / YouTube):</label>
             <input type="url" id="video" placeholder="https://...">
 
             <button class="submit-btn" onclick="saveMovieToFirebase()">Ajoute sou Sit la</button>
@@ -525,6 +556,8 @@
             <button class="back-btn" onclick="closePlayer()">⬅ Retounen</button>
         </div>
         <video id="mainVideo" controls playsinline></video>
+        <iframe id="youtubeIframe" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        
         <div class="fullscreen-action-bar">
             <button class="fullscreen-btn" onclick="requestVideoFullscreen()">⛶ Pran Tout Ekran (Fullscreen)</button>
         </div>
@@ -558,6 +591,9 @@
         let haitianMovies = [];
         let seriesList = [];
         let movieKeys = { other: [], haitian: [], series: [] };
+
+        let currentAction = 'add'; // 'add' oswa 'delete'
+        let selectedMovieKeyToDelete = null;
 
         function selectProfile(type) {
             currentActiveProfile = type;
@@ -613,12 +649,16 @@
 
             filteredOther.forEach((m) => {
                 const realIndex = otherMovies.indexOf(m);
+                const key = movieKeys.other[realIndex];
                 oGrid.innerHTML += `
-                    <div class="movie-card" onclick="playOtherMovie(${realIndex})">
-                        <img src="${m.image || m.poster}" alt="${m.title}">
-                        <div class="movie-info">
-                            <div class="movie-title">${m.title}</div>
-                            <div class="movie-views">👁️ ${m.views || 0} vues</div>
+                    <div class="movie-card">
+                        <button class="movie-options-btn" onclick="promptDeleteMovie('${key}', event)" title="Efase fim sa a">⋮</button>
+                        <div onclick="playOtherMovie(${realIndex})">
+                            <img src="${m.image || m.poster}" alt="${m.title}">
+                            <div class="movie-info">
+                                <div class="movie-title">${m.title}</div>
+                                <div class="movie-views">👁️ ${m.views || 0} vues</div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -626,12 +666,16 @@
 
             filteredHaitian.forEach((m) => {
                 const realIndex = haitianMovies.indexOf(m);
+                const key = movieKeys.haitian[realIndex];
                 hGrid.innerHTML += `
-                    <div class="movie-card" onclick="playHaitianMovie(${realIndex})">
-                        <img src="${m.image || m.poster}" alt="${m.title}">
-                        <div class="movie-info">
-                            <div class="movie-title">${m.title}</div>
-                            <div class="movie-views">👁️ ${m.views || 0} vues</div>
+                    <div class="movie-card">
+                        <button class="movie-options-btn" onclick="promptDeleteMovie('${key}', event)" title="Efase fim sa a">⋮</button>
+                        <div onclick="playHaitianMovie(${realIndex})">
+                            <img src="${m.image || m.poster}" alt="${m.title}">
+                            <div class="movie-info">
+                                <div class="movie-title">${m.title}</div>
+                                <div class="movie-views">👁️ ${m.views || 0} vues</div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -639,12 +683,16 @@
 
             filteredSeries.forEach((s) => {
                 const realIndex = seriesList.indexOf(s);
+                const key = movieKeys.series[realIndex];
                 sGrid.innerHTML += `
-                    <div class="movie-card" onclick="openSeries(${realIndex})">
-                        <img src="${s.image || s.poster}" alt="${s.title}">
-                        <div class="movie-info">
-                            <div class="movie-title">${s.title}</div>
-                            <div class="movie-views">👁️ ${s.views || 0} vues</div>
+                    <div class="movie-card">
+                        <button class="movie-options-btn" onclick="promptDeleteMovie('${key}', event)" title="Efase seri sa a">⋮</button>
+                        <div onclick="openSeries(${realIndex})">
+                            <img src="${s.image || s.poster}" alt="${s.title}">
+                            <div class="movie-info">
+                                <div class="movie-title">${s.title}</div>
+                                <div class="movie-views">👁️ ${s.views || 0} vues</div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -663,6 +711,30 @@
         }
 
         const videoPlayer = document.getElementById('mainVideo');
+        const youtubeIframe = document.getElementById('youtubeIframe');
+
+        function extractYouTubeId(url) {
+            let regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            let match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        function playMedia(url) {
+            let ytId = extractYouTubeId(url);
+            if (ytId) {
+                videoPlayer.pause();
+                videoPlayer.style.display = 'none';
+                youtubeIframe.src = "https://www.youtube.com/embed/" + ytId + "?autoplay=1";
+                youtubeIframe.style.display = 'block';
+            } else {
+                youtubeIframe.src = '';
+                youtubeIframe.style.display = 'none';
+                videoPlayer.src = url;
+                videoPlayer.style.display = 'block';
+                videoPlayer.play();
+            }
+            document.getElementById('player-screen').style.display = 'flex';
+        }
 
         function addViewCount(category, index) {
             let key;
@@ -690,17 +762,13 @@
         function playOtherMovie(i) {
             addViewCount('other', i);
             document.getElementById('episodesBox').innerHTML = '';
-            videoPlayer.src = otherMovies[i].video;
-            document.getElementById('player-screen').style.display = 'flex';
-            videoPlayer.play();
+            playMedia(otherMovies[i].video);
         }
 
         function playHaitianMovie(i) {
             addViewCount('haitian', i);
             document.getElementById('episodesBox').innerHTML = '';
-            videoPlayer.src = haitianMovies[i].video;
-            document.getElementById('player-screen').style.display = 'flex';
-            videoPlayer.play();
+            playMedia(haitianMovies[i].video);
         }
 
         function openSeries(i) {
@@ -715,44 +783,56 @@
                         <button class="episode-btn" onclick="playEpisode('${ep.video}')">▶ ${ep.name}</button>
                     `;
                 });
-                videoPlayer.src = series.episodes[0].video;
+                playMedia(series.episodes[0].video);
             } else {
-                videoPlayer.src = series.video;
+                playMedia(series.video);
             }
-
-            document.getElementById('player-screen').style.display = 'flex';
-            videoPlayer.play();
         }
 
         function playEpisode(url) {
-            videoPlayer.src = url;
-            videoPlayer.play();
+            playMedia(url);
         }
 
         function closePlayer() {
             videoPlayer.pause();
             videoPlayer.src = '';
+            youtubeIframe.src = '';
             document.getElementById('player-screen').style.display = 'none';
         }
 
         function requestVideoFullscreen() {
-            if (videoPlayer.requestFullscreen) {
-                videoPlayer.requestFullscreen();
-            } else if (videoPlayer.webkitRequestFullscreen) {
-                videoPlayer.webkitRequestFullscreen();
-            } else if (videoPlayer.msRequestFullscreen) {
-                videoPlayer.msRequestFullscreen();
+            let activeEl = (youtubeIframe.style.display === 'block') ? youtubeIframe : videoPlayer;
+            if (activeEl.requestFullscreen) {
+                activeEl.requestFullscreen();
+            } else if (activeEl.webkitRequestFullscreen) {
+                activeEl.webkitRequestFullscreen();
+            } else if (activeEl.msRequestFullscreen) {
+                activeEl.msRequestFullscreen();
             }
             if (screen.orientation && screen.orientation.lock) {
                 screen.orientation.lock('landscape').catch(() => {});
             }
         }
 
-        /* Louvri Modal PIN nan kote modpas la kache an pwen (••••) */
-        function openPinModal() {
+        /* Modal PIN pou Ajoute / Efase Kontni */
+        function openPinModal(action, key = null) {
+            currentAction = action;
+            selectedMovieKeyToDelete = key;
             document.getElementById('adminPinInput').value = '';
             document.getElementById('pinErrorMsg').textContent = '';
+            
+            if(action === 'delete') {
+                document.getElementById('pinInstructionText').textContent = "Antre kòd sekirite pou efase fim/seri sa a:";
+            } else {
+                document.getElementById('pinInstructionText').textContent = "Antre kòd sekirite a pou w ka ajoute fim:";
+            }
+            
             document.getElementById('pinModal').style.display = 'flex';
+        }
+
+        function promptDeleteMovie(key, event) {
+            event.stopPropagation(); // Anpeche fim nan jwe lè w klike 3 ti pwen yo
+            openPinModal('delete', key);
         }
 
         function closePinModal() {
@@ -763,7 +843,15 @@
             const inputPin = document.getElementById('adminPinInput').value;
             if (inputPin === "1526") {
                 closePinModal();
-                document.getElementById('addModal').style.display = 'flex';
+                if(currentAction === 'add') {
+                    document.getElementById('addModal').style.display = 'flex';
+                } else if(currentAction === 'delete' && selectedMovieKeyToDelete) {
+                    database.ref('movies/' + selectedMovieKeyToDelete).remove().then(() => {
+                        alert("✅ Fim/Seri a efase ak siksè!");
+                    }).catch((err) => {
+                        alert("Erè: " + err.message);
+                    });
+                }
             } else {
                 document.getElementById('pinErrorMsg').textContent = "❌ Kòd sekirite a pa bon!";
             }
