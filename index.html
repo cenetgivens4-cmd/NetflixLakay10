@@ -22,6 +22,32 @@
             min-height: 100vh;
         }
 
+        /* Bwat Pop-up Bèl pou Mesaj Pèsonalize */
+        #custom-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background-color: #e50914;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.4);
+            z-index: 10000;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+            opacity: 0;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #custom-toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
         /* Animasyon Ouvèti Netflix Lakay (App Open) */
         #splash-screen {
             position: fixed;
@@ -44,7 +70,7 @@
             white-space: nowrap;
         }
 
-        /* Animasyon Netflix Style ki parèt ak son Tudum */
+        /* Animasyon Netflix Sèlman (San Son) */
         #movie-intro-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -60,13 +86,12 @@
             font-size: 42px;
             font-weight: 900;
             letter-spacing: 3px;
-            animation: movieIntroAnim 2.8s forwards;
+            animation: movieIntroAnim 2s forwards;
             white-space: nowrap;
         }
         @keyframes movieIntroAnim {
             0% { transform: scale(0.3); opacity: 0; filter: blur(20px); }
-            40% { transform: scale(1.2); opacity: 1; filter: blur(0); }
-            80% { transform: scale(1.1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 1; filter: blur(0); }
             100% { transform: scale(1.5); opacity: 0; filter: blur(10px); }
         }
 
@@ -376,6 +401,7 @@
             align-items: center;
         }
         
+        /* Bouton Retounen Won (Flèch Gòch) sanble ak Netflix */
         .netflix-back-btn {
             position: absolute;
             top: 15px;
@@ -397,6 +423,7 @@
             background: rgba(255, 255, 255, 0.3);
         }
 
+        /* Tit Fim nan nan mitan anlè */
         .netflix-top-title {
             position: absolute;
             top: 22px;
@@ -425,7 +452,7 @@
             display: none;
         }
 
-        /* Ba sèlman pou Pwofil Seri (Montre sèlman Episodes) */
+        /* Ba sèlman pou Pwofil Seri (Bouton Episodes sèlman) */
         .netflix-bottom-bar {
             position: absolute;
             bottom: 15px;
@@ -513,18 +540,21 @@
 </head>
 <body>
 
-    <!-- Animasyon Ouvèti Netflix Lakay (App Open) -->
+    <!-- Ti Bwat Mesaj Bèl -->
+    <div id="custom-toast">
+        <i class='bx bx-check-circle' style='font-size: 20px;'></i>
+        <span id="toast-message">Fim siprime ak siksè!</span>
+    </div>
+
+    <!-- Animasyon Ouvèti Netflix Lakay -->
     <div id="splash-screen">
         <div class="splash-logo">NETFLIX LAKAY</div>
     </div>
 
-    <!-- Animasyon Netflix ak Son Tudum -->
+    <!-- Animasyon Netflix san son -->
     <div id="movie-intro-screen">
         <div class="intro-logo">NETFLIX LAKAY</div>
     </div>
-    
-    <!-- Vrè son orijinal Netflix Tudum (Klè epi fò) -->
-    <audio id="netflixSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <!-- Ekran Who's Watching? -->
     <div id="profile-screen">
@@ -645,7 +675,6 @@
         <video id="mainVideo" controls playsinline></video>
         <iframe id="youtubeIframe" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
         
-        <!-- Ba sèlman pou Pwofil Seri (Montre sèlman Episodes) -->
         <div class="netflix-bottom-bar" id="netflixBottomBar" style="display:none;">
             <button class="netflix-control-item" onclick="toggleEpisodesBox()">
                 <i class='bx bx-movie-play'></i>
@@ -686,6 +715,15 @@
 
         let currentAction = 'add';
         let selectedMovieKeyToDelete = null;
+
+        function showToast(text) {
+            const toast = document.getElementById('custom-toast');
+            document.getElementById('toast-message').textContent = text;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
 
         function selectProfile(type) {
             currentActiveProfile = type;
@@ -810,7 +848,7 @@
             return (match && match[1]) ? match[1] : null;
         }
 
-        /* Jwe animasyon an epi fòse son Tudum an jwe fò */
+        /* Fòse wotasyon landscape pou tout kalite videyo epi jwe animasyon san son */
         function playMediaWithIntro(movieTitle, urlCallback) {
             try {
                 if (screen.orientation && screen.orientation.lock) {
@@ -821,27 +859,13 @@
             } catch(e) {}
 
             const introScreen = document.getElementById('movie-intro-screen');
-            const netflixSound = document.getElementById('netflixSound');
-            
             document.getElementById('playerTitleDisplay').textContent = movieTitle;
             introScreen.style.display = 'flex';
-
-            // Re-entansifye son an pou l jwe byen fò
-            if (netflixSound) {
-                netflixSound.currentTime = 0;
-                netflixSound.volume = 1.0;
-                let playPromise = netflixSound.play();
-                if (playPromise !== undefined) {
-                    playPromise.catch(error => {
-                        console.log("Autoplay son an te mande enteraksyon klike:", error);
-                    });
-                }
-            }
 
             setTimeout(() => {
                 introScreen.style.display = 'none';
                 urlCallback();
-            }, 2500);
+            }, 1800);
         }
 
         function playActualMedia(url) {
@@ -850,7 +874,8 @@
                 videoPlayer.pause();
                 videoPlayer.style.display = 'none';
                 let origin = window.location.origin;
-                youtubeIframe.src = "https://www.youtube-nocookie.com/embed/" + ytId + "?autoplay=1&controls=1&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1&enablejsapi=1&origin=" + encodeURIComponent(origin);
+                // Paramèt YouTube pou kache tout logo, ba kontwòl YouTube yo, ak tit yo
+                youtubeIframe.src = "https://www.youtube-nocookie.com/embed/" + ytId + "?autoplay=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1&disablekb=1&fs=0&origin=" + encodeURIComponent(origin);
                 youtubeIframe.style.display = 'block';
             } else {
                 youtubeIframe.src = '';
@@ -979,9 +1004,9 @@
                     document.getElementById('addModal').style.display = 'flex';
                 } else if(currentAction === 'delete' && selectedMovieKeyToDelete) {
                     database.ref('movies/' + selectedMovieKeyToDelete).remove().then(() => {
-                        alert("✅ Fim/Seri a efase ak siksè!");
+                        showToast("Fim siprime ak siksè!");
                     }).catch((err) => {
-                        alert("Erè: " + err.message);
+                        showToast("Erè: " + err.message);
                     });
                 }
             } else {
@@ -1016,12 +1041,11 @@
                 views: 0,
                 createdAt: Date.now()
             }).then(() => {
-                msg.style.color = "#4bb543";
-                msg.textContent = "✅ Kontni an ajoute ak siksè!";
+                showToast("Fim ajoute ak siksè!");
                 document.getElementById('title').value = '';
                 document.getElementById('image').value = '';
                 document.getElementById('video').value = '';
-                setTimeout(() => { closeAddModal(); }, 1200);
+                setTimeout(() => { closeAddModal(); }, 1000);
             }).catch((err) => {
                 msg.style.color = "#ff4d4d";
                 msg.textContent = "Erè: " + err.message;
