@@ -22,7 +22,7 @@
             min-height: 100vh;
         }
 
-        /* Animasyon Ouvèti Netflix Lakay (Trè rapid kounye a) */
+        /* Animasyon Ouvèti Netflix Lakay (App Open) */
         #splash-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -33,6 +33,7 @@
             align-items: center;
             z-index: 9999;
             animation: fadeOutSplash 0.4s ease 1.2s forwards;
+            pointer-events: none;
         }
         .splash-logo {
             color: #e50914;
@@ -42,6 +43,33 @@
             animation: netflixAnim 1.1s forwards;
             white-space: nowrap;
         }
+
+        /* Animasyon Netflix Style ki parèt ak son Tudum */
+        #movie-intro-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9000;
+        }
+        .intro-logo {
+            color: #e50914;
+            font-size: 42px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            animation: movieIntroAnim 2.8s forwards;
+            white-space: nowrap;
+        }
+        @keyframes movieIntroAnim {
+            0% { transform: scale(0.3); opacity: 0; filter: blur(20px); }
+            40% { transform: scale(1.2); opacity: 1; filter: blur(0); }
+            80% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; filter: blur(10px); }
+        }
+
         @keyframes netflixAnim {
             0% { transform: scale(0.8); opacity: 0; }
             50% { transform: scale(1.1); opacity: 1; }
@@ -344,73 +372,127 @@
             background-color: #000;
             z-index: 2000;
             flex-direction: column;
-            justify-content: flex-start;
+            justify-content: center;
             align-items: center;
-            overflow-y: auto;
         }
-        .player-top-bar {
-            width: 100%;
-            display: flex;
-            justify-content: flex-start;
-            padding: 10px;
-        }
-        .back-btn {
-            background: rgba(255,255,255,0.2);
+        
+        .netflix-back-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(0, 0, 0, 0.6);
             color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
             cursor: pointer;
-            font-size: 12px;
+            z-index: 2100;
         }
+        .netflix-back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .netflix-top-title {
+            position: absolute;
+            top: 22px;
+            width: 100%;
+            text-align: center;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            z-index: 2050;
+            pointer-events: none;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+        }
+
         #mainVideo {
             width: 100%;
-            max-height: 50vh;
+            height: 100%;
+            object-fit: contain;
             background: #000;
             display: none;
         }
         #youtubeIframe {
             width: 100%;
-            height: 50vh;
+            height: 100%;
             border: none;
             display: none;
         }
-        .fullscreen-action-bar {
+
+        /* Ba sèlman pou Pwofil Seri (Montre sèlman Episodes) */
+        .netflix-bottom-bar {
+            position: absolute;
+            bottom: 15px;
             width: 100%;
-            padding: 12px;
-            text-align: center;
-            background: #111;
+            display: flex;
+            justify-content: center;
+            z-index: 2100;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            padding: 20px 10px 10px 10px;
         }
-        .fullscreen-btn {
-            background: #e50914;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
+        .netflix-control-item {
+            background: #222;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
             font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: bold;
         }
-        .fullscreen-btn:hover {
-            background: #b81d24;
+        .netflix-control-item i {
+            font-size: 18px;
+            color: #e50914;
         }
+        .netflix-control-item:hover {
+            background: #e50914;
+            color: #fff;
+            border-color: #e50914;
+        }
+        .netflix-control-item:hover i {
+            color: #fff;
+        }
+
+        /* Bwat Epizòd pou Seri */
         .episodes-box {
-            width: 100%;
+            position: absolute;
+            bottom: 75px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
             padding: 12px;
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid #444;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            z-index: 2200;
         }
         .episodes-title {
-            font-size: 14px;
+            font-size: 13px;
             margin-bottom: 8px;
             color: #e50914;
+            font-weight: bold;
         }
         .episode-btn {
             display: block;
             width: 100%;
             padding: 8px;
-            margin-bottom: 6px;
-            background: #222;
+            margin-bottom: 5px;
+            background: #2b2b2b;
             color: #fff;
-            border: 1px solid #333;
+            border: none;
             border-radius: 4px;
             text-align: left;
             cursor: pointer;
@@ -431,10 +513,18 @@
 </head>
 <body>
 
-    <!-- Animasyon Ouvèti Netflix Lakay (Kounye a li rapid anpil) -->
+    <!-- Animasyon Ouvèti Netflix Lakay (App Open) -->
     <div id="splash-screen">
         <div class="splash-logo">NETFLIX LAKAY</div>
     </div>
+
+    <!-- Animasyon Netflix ak Son Tudum -->
+    <div id="movie-intro-screen">
+        <div class="intro-logo">NETFLIX LAKAY</div>
+    </div>
+    
+    <!-- Vrè son orijinal Netflix Tudum (Klè epi fò) -->
+    <audio id="netflixSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <!-- Ekran Who's Watching? -->
     <div id="profile-screen">
@@ -525,7 +615,7 @@
             <label for="image">Lyen Imaj / Afich (URL):</label>
             <input type="url" id="image" placeholder="https://...">
 
-            <label for="video">Lyen Videyo (URL / YouTube):</label>
+            <label for="video">Lyen Videyo (URL / YouTube / Archive.org):</label>
             <input type="url" id="video" placeholder="https://...">
 
             <button class="submit-btn" onclick="saveMovieToFirebase()">Ajoute sou Sit la</button>
@@ -549,15 +639,20 @@
 
     <!-- Player Screen -->
     <div id="player-screen">
-        <div class="player-top-bar">
-            <button class="back-btn" onclick="closePlayer()">⬅ Retounen</button>
-        </div>
+        <button class="netflix-back-btn" onclick="closePlayer()" title="Retounen">‹</button>
+        <div class="netflix-top-title" id="playerTitleDisplay">Netflix Lakay</div>
+
         <video id="mainVideo" controls playsinline></video>
         <iframe id="youtubeIframe" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
         
-        <div class="fullscreen-action-bar">
-            <button class="fullscreen-btn" onclick="requestVideoFullscreen()">⛶ Pran Tout Ekran (Fullscreen)</button>
+        <!-- Ba sèlman pou Pwofil Seri (Montre sèlman Episodes) -->
+        <div class="netflix-bottom-bar" id="netflixBottomBar" style="display:none;">
+            <button class="netflix-control-item" onclick="toggleEpisodesBox()">
+                <i class='bx bx-movie-play'></i>
+                <span>Episodes</span>
+            </button>
         </div>
+
         <div class="episodes-box" id="episodesBox"></div>
     </div>
 
@@ -594,9 +689,10 @@
 
         function selectProfile(type) {
             currentActiveProfile = type;
-            document.getElementById('profile-screen').style.opacity = '0';
+            const profileScreen = document.getElementById('profile-screen');
+            profileScreen.style.opacity = '0';
             setTimeout(() => {
-                document.getElementById('profile-screen').style.display = 'none';
+                profileScreen.style.display = 'none';
             }, 300);
 
             document.getElementById('section-other').style.display = (type === 'other') ? 'block' : 'none';
@@ -605,8 +701,9 @@
         }
 
         function showProfiles() {
-            document.getElementById('profile-screen').style.display = 'flex';
-            document.getElementById('profile-screen').style.opacity = '1';
+            const profileScreen = document.getElementById('profile-screen');
+            profileScreen.style.display = 'flex';
+            profileScreen.style.opacity = '1';
         }
 
         database.ref('movies').on('value', (snapshot) => {
@@ -713,13 +810,47 @@
             return (match && match[1]) ? match[1] : null;
         }
 
-        function playMedia(url) {
+        /* Jwe animasyon an epi fòse son Tudum an jwe fò */
+        function playMediaWithIntro(movieTitle, urlCallback) {
+            try {
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(() => {});
+                } else if (window.screen && window.screen.lockOrientation) {
+                    window.screen.lockOrientation('landscape');
+                }
+            } catch(e) {}
+
+            const introScreen = document.getElementById('movie-intro-screen');
+            const netflixSound = document.getElementById('netflixSound');
+            
+            document.getElementById('playerTitleDisplay').textContent = movieTitle;
+            introScreen.style.display = 'flex';
+
+            // Re-entansifye son an pou l jwe byen fò
+            if (netflixSound) {
+                netflixSound.currentTime = 0;
+                netflixSound.volume = 1.0;
+                let playPromise = netflixSound.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Autoplay son an te mande enteraksyon klike:", error);
+                    });
+                }
+            }
+
+            setTimeout(() => {
+                introScreen.style.display = 'none';
+                urlCallback();
+            }, 2500);
+        }
+
+        function playActualMedia(url) {
             let ytId = extractYouTubeId(url);
             if (ytId) {
                 videoPlayer.pause();
                 videoPlayer.style.display = 'none';
                 let origin = window.location.origin;
-                youtubeIframe.src = "https://www.youtube-nocookie.com/embed/" + ytId + "?autoplay=1&enablejsapi=1&rel=0&playsinline=1&origin=" + encodeURIComponent(origin);
+                youtubeIframe.src = "https://www.youtube-nocookie.com/embed/" + ytId + "?autoplay=1&controls=1&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1&enablejsapi=1&origin=" + encodeURIComponent(origin);
                 youtubeIframe.style.display = 'block';
             } else {
                 youtubeIframe.src = '';
@@ -756,14 +887,20 @@
 
         function playOtherMovie(i) {
             addViewCount('other', i);
-            document.getElementById('episodesBox').innerHTML = '';
-            playMedia(otherMovies[i].video);
+            document.getElementById('netflixBottomBar').style.display = 'none';
+            document.getElementById('episodesBox').style.display = 'none';
+            playMediaWithIntro(otherMovies[i].title, () => {
+                playActualMedia(otherMovies[i].video);
+            });
         }
 
         function playHaitianMovie(i) {
             addViewCount('haitian', i);
-            document.getElementById('episodesBox').innerHTML = '';
-            playMedia(haitianMovies[i].video);
+            document.getElementById('netflixBottomBar').style.display = 'none';
+            document.getElementById('episodesBox').style.display = 'none';
+            playMediaWithIntro(haitianMovies[i].title, () => {
+                playActualMedia(haitianMovies[i].video);
+            });
         }
 
         function openSeries(i) {
@@ -775,17 +912,31 @@
             if(series.episodes && Array.isArray(series.episodes)) {
                 series.episodes.forEach(ep => {
                     epBox.innerHTML += `
-                        <button class="episode-btn" onclick="playEpisode('${ep.video}')">▶ ${ep.name}</button>
+                        <button class="episode-btn" onclick="playEpisode('${ep.video}', '${series.title} - ${ep.name}')">▶ ${ep.name}</button>
                     `;
                 });
-                playMedia(series.episodes[0].video);
+                document.getElementById('netflixBottomBar').style.display = 'flex';
+                playMediaWithIntro(series.title + " - S1:E1", () => {
+                    playActualMedia(series.episodes[0].video);
+                });
             } else {
-                playMedia(series.video);
+                document.getElementById('netflixBottomBar').style.display = 'none';
+                playMediaWithIntro(series.title, () => {
+                    playActualMedia(series.video);
+                });
             }
         }
 
-        function playEpisode(url) {
-            playMedia(url);
+        function playEpisode(url, title) {
+            document.getElementById('episodesBox').style.display = 'none';
+            playMediaWithIntro(title, () => {
+                playActualMedia(url);
+            });
+        }
+
+        function toggleEpisodesBox() {
+            const box = document.getElementById('episodesBox');
+            box.style.display = (box.style.display === 'block') ? 'none' : 'block';
         }
 
         function closePlayer() {
@@ -793,20 +944,6 @@
             videoPlayer.src = '';
             youtubeIframe.src = '';
             document.getElementById('player-screen').style.display = 'none';
-        }
-
-        function requestVideoFullscreen() {
-            let activeEl = (youtubeIframe.style.display === 'block') ? youtubeIframe : videoPlayer;
-            if (activeEl.requestFullscreen) {
-                activeEl.requestFullscreen();
-            } else if (activeEl.webkitRequestFullscreen) {
-                activeEl.webkitRequestFullscreen();
-            } else if (activeEl.msRequestFullscreen) {
-                activeEl.msRequestFullscreen();
-            }
-            if (screen.orientation && screen.orientation.lock) {
-                screen.orientation.lock('landscape').catch(() => {});
-            }
         }
 
         /* Modal PIN */
@@ -860,8 +997,8 @@
         function saveMovieToFirebase() {
             const category = document.getElementById('category').value;
             const title = document.getElementById('title').value;
-            const image = document.getElementById('image').value;
-            const video = document.getElementById('video').value;
+            let image = document.getElementById('image').value;
+            let video = document.getElementById('video').value;
             const msg = document.getElementById('addMsg');
 
             if (!title || !image || !video) {
