@@ -3,7 +3,7 @@
 <html lang="ht">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Netflix Lakay</title>
     <!-- Icons Boxicons -->
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
@@ -13,6 +13,7 @@
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
         body {
             background-color: #141414;
@@ -49,7 +50,7 @@
             opacity: 1;
         }
 
-        /* Animasyon Ouvèti Netflix Lakay (App Open) */
+        /* Animasyon Ouvèti Netflix Lakay */
         #splash-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -199,15 +200,23 @@
             position: absolute;
             right: 0;
         }
+
+        /* Bwat Rechèch ki Fòse Klavye a Monte Otomatikman */
         .search-box {
             width: 100%;
-            padding: 8px 12px;
+            padding: 10px 12px;
             background-color: #222;
             border: 1px solid #444;
             border-radius: 4px;
             color: white;
-            font-size: 13px;
+            font-size: 14px;
             outline: none;
+            cursor: text;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+        .search-box:focus {
+            border-color: #e50914;
         }
 
         .container {
@@ -352,6 +361,8 @@
             font-size: 14px;
             box-sizing: border-box;
             outline: none;
+            user-select: text;
+            -webkit-user-select: text;
         }
         .modal-content input:focus {
             border-color: #e50914;
@@ -537,7 +548,7 @@
             <h1>Netflix Lakay</h1>
             <button class="settings-icon-btn" onclick="openSettings()">⚙️</button>
         </div>
-        <input type="text" id="searchInput" class="search-box" placeholder="🔍 Chache yon fim oswa seri..." onkeyup="filterContent()">
+        <input type="text" id="searchInput" class="search-box" placeholder="🔍 Chache yon fim oswa seri..." onkeyup="filterContent()" onclick="this.focus();">
     </header>
 
     <div class="container">
@@ -575,7 +586,7 @@
             <h3 style="color:#e50914; margin-bottom:10px;">🔑 Sekirite Admin</h3>
             <p style="font-size:12px; color:#ccc;" id="pinInstructionText">Antre kòd sekirite a pou w kontinye:</p>
             
-            <input type="password" id="adminPinInput" placeholder="••••" style="text-align:center; font-size:18px; letter-spacing:5px;">
+            <input type="password" id="adminPinInput" placeholder="••••" style="text-align:center; font-size:18px; letter-spacing:5px;" onclick="this.focus();">
 
             <button class="submit-btn" onclick="verifyPin()">Valide</button>
             <button class="cancel-btn" onclick="closePinModal()">Fèmen</button>
@@ -596,25 +607,18 @@
             </select>
 
             <label for="title">Tit Fim / Seri a:</label>
-            <input type="text" id="title" placeholder="eg: Spider-Man">
+            <input type="text" id="title" placeholder="eg: Spider-Man" onclick="this.focus();">
 
             <label for="video">Lyen Videyo (URL / YouTube / Archive.org):</label>
-
-            <!-- Lè ou tape lyen videyo a, li ranpli imaj la otomatikman si l se YouTube -->
-            <input type="url" id="video" placeholder="https://..." oninput="autoFetchThumbnail()">
+            <input type="url" id="video" placeholder="https://..." oninput="autoFetchThumbnail()" onclick="this.focus();">
 
             <label for="image">Lyen Imaj / Afich (Opsyonèl - kite l vid si w vle imaj otomatik):</label>
-
-            <input type="url" id="image" placeholder="https://... (Oswa kite l vid)">
+            <input type="url" id="image" placeholder="https://... (Oswa kite l vid)" onclick="this.focus();">
 
             <button class="submit-btn" onclick="saveMovieToFirebase()">Ajoute sou Sit la</button>
-
             <button class="cancel-btn" onclick="closeAddModal()">Anule</button>
-
             <div id="addMsg" style="margin-top:10px; font-size:12px; font-weight:bold;"></div>
-
         </div>
-
     </div>
 
     <!-- Modal Settings -->
@@ -683,19 +687,16 @@
             }, 2500);
         }
 
-        /* Fonksyon ki rale imaj YouTube otomatikman si bwat imaj la vid */
         function autoFetchThumbnail() {
             const videoUrl = document.getElementById('video').value.trim();
             const imageInput = document.getElementById('image');
             const ytId = extractYouTubeId(videoUrl);
 
-            // Si se yon lyen YouTube epi bwat imaj la pa ranpli pa menm, mete imaj otomatik li
             if (ytId && !imageInput.dataset.manualInput) {
                 imageInput.value = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
             }
         }
 
-        // Si itilizatè a ekri pa menm nan bwat imaj la, nou sonje li pou nou pa siprime l
         document.getElementById('image').addEventListener('input', function() {
             if (this.value.trim() !== '') {
                 this.dataset.manualInput = "true";
@@ -1025,7 +1026,6 @@
                 return;
             }
 
-            // Si bwat imaj la vid, epi se yon lyen YouTube, nou pran afich YouTube la otomatikman
             const ytId = extractYouTubeId(video);
             if (!image && ytId) {
                 image = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
@@ -1063,3 +1063,4 @@
     </script>
 </body>
 </html>
+
