@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ht">
 <head>
@@ -201,7 +200,6 @@
             right: 0;
         }
 
-        /* Bwat Rechèch ki Fòse Klavye a Monte Otomatikman */
         .search-box {
             width: 100%;
             padding: 10px 12px;
@@ -414,6 +412,20 @@
             overflow: hidden;
         }
 
+        /* Kontwòl Lektè a ki vin envizib otomatikman epi k ap parèt lè yo touche ekran an */
+        .player-controls-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 100001;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            opacity: 1;
+        }
+        .player-controls-overlay.hidden-controls {
+            opacity: 0;
+        }
+
+        /* Bouton Retounen nan sou bò gòch */
         .netflix-back-btn {
             position: absolute;
             top: 15px;
@@ -429,7 +441,30 @@
             justify-content: center;
             font-size: 28px;
             cursor: pointer;
-            z-index: 100001;
+            pointer-events: auto;
+        }
+
+        /* Bouton Lock Screen sou bò dwat (menm gwosè ak style ak bouton retounen an) */
+        .netflix-lock-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+        .netflix-lock-btn.locked {
+            background: #e50914;
+            border-color: #e50914;
         }
 
         #mainVideo {
@@ -472,6 +507,7 @@
             overflow-y: auto;
             display: none;
             z-index: 100000;
+            pointer-events: auto;
         }
         .episodes-title {
             font-size: 13px;
@@ -635,8 +671,12 @@
     </div>
 
     <!-- Player Screen -->
-    <div id="player-screen">
-        <button class="netflix-back-btn" onclick="closePlayer()" title="Retounen">‹</button>
+    <div id="player-screen" onclick="handleScreenTouch()">
+        <!-- Kontwòl ki vin envizib otomatikman epi ki parèt lè yo touche ekran an -->
+        <div class="player-controls-overlay" id="playerControlsOverlay">
+            <button class="netflix-back-btn" onclick="closePlayer(event)" title="Retounen">‹</button>
+            <button class="netflix-lock-btn" id="lockScreenBtn" onclick="toggleLockScreen(event)" title="Bloke Ekran">🔓</button>
+        </div>
 
         <video id="mainVideo" controls playsinline></video>
         
@@ -677,6 +717,8 @@
 
         let currentAction = 'add';
         let selectedMovieKeyToDelete = null;
+        let hideControlsTimer = null;
+        let isScreenLocked = false;
 
         function showToast(text) {
             const toast = document.getElementById('custom-toast');
@@ -685,6 +727,43 @@
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 2500);
+        }
+
+        /* Fonksyon pou jere kache / afiche kontwòl yo lè w ap touche ekran an */
+        function handleScreenTouch() {
+            // Si ekran an bloke (Locked), nou pa kite anyen parèt pou evite tout fo klike
+            if (isScreenLocked) return;
+
+            const overlay = document.getElementById('playerControlsOverlay');
+            overlay.classList.remove('hidden-controls');
+            
+            clearTimeout(hideControlsTimer);
+            hideControlsTimer = setTimeout(() => {
+                overlay.classList.add('hidden-controls');
+            }, 3000); // Kontwòl yo ap kache apre 3 segonn
+        }
+
+        /* Fonksyon pou Bloke / Deploke Ekran an */
+        function toggleLockScreen(event) {
+            event.stopPropagation();
+            isScreenLocked = !isScreenLocked;
+            const lockBtn = document.getElementById('lockScreenBtn');
+            const overlay = document.getElementById('playerControlsOverlay');
+
+            if (isScreenLocked) {
+                lockBtn.innerHTML = "🔒";
+                lockBtn.classList.add('locked');
+                showToast("Ekran bloke (Touch yo dezaktive)");
+                // Fè bouton retou an disparèt pou yo pa touche l pa erè
+                clearTimeout(hideControlsTimer);
+                overlay.classList.add('hidden-controls');
+            } else {
+                lockBtn.innerHTML = "🔓";
+                lockBtn.classList.remove('locked');
+                showToast("Ekran deploke");
+                overlay.classList.remove('hidden-controls');
+                handleScreenTouch();
+            }
         }
 
         function autoFetchThumbnail() {
@@ -860,6 +939,11 @@
         }
 
         function playActualMedia(url) {
+            isScreenLocked = false;
+            const lockBtn = document.getElementById('lockScreenBtn');
+            lockBtn.innerHTML = "🔓";
+            lockBtn.classList.remove('locked');
+
             let ytId = extractYouTubeId(url);
             if (ytId) {
                 videoPlayer.pause();
@@ -874,6 +958,7 @@
                 videoPlayer.play();
             }
             playerScreen.style.display = 'flex';
+            handleScreenTouch();
         }
 
         function addViewCount(category, index) {
@@ -946,11 +1031,14 @@
             });
         }
 
-        function closePlayer() {
+        function closePlayer(event) {
+            if (event) event.stopPropagation();
+            isScreenLocked = false;
             videoPlayer.pause();
             videoPlayer.src = '';
             youtubeIframe.src = '';
             playerScreen.style.display = 'none';
+            clearTimeout(hideControlsTimer);
 
             if (document.exitFullscreen) {
                 document.exitFullscreen().catch(() => {});
@@ -1063,4 +1151,3 @@
     </script>
 </body>
 </html>
-
