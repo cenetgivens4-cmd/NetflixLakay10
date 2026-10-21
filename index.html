@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ht">
 <head>
@@ -389,7 +390,7 @@
             cursor: pointer;
         }
 
-        /* Player Screen - Plein Ekran epi Fòse Paysage */
+        /* Player Screen */
         #player-screen {
             display: none;
             position: fixed;
@@ -402,7 +403,6 @@
             overflow: hidden;
         }
 
-        /* Bouton Retounen nan Player a */
         .netflix-back-btn {
             position: absolute;
             top: 15px;
@@ -429,7 +429,6 @@
             display: none;
         }
 
-        /* Bwat Iframe YouTube ki koupe tout logo ak tit anwo ak anba yo nèt */
         .iframe-wrapper {
             position: relative;
             width: 100%;
@@ -599,16 +598,23 @@
             <label for="title">Tit Fim / Seri a:</label>
             <input type="text" id="title" placeholder="eg: Spider-Man">
 
-            <label for="image">Lyen Imaj / Afich (URL):</label>
-            <input type="url" id="image" placeholder="https://...">
-
             <label for="video">Lyen Videyo (URL / YouTube / Archive.org):</label>
-            <input type="url" id="video" placeholder="https://...">
+
+            <!-- Lè ou tape lyen videyo a, li ranpli imaj la otomatikman si l se YouTube -->
+            <input type="url" id="video" placeholder="https://..." oninput="autoFetchThumbnail()">
+
+            <label for="image">Lyen Imaj / Afich (Opsyonèl - kite l vid si w vle imaj otomatik):</label>
+
+            <input type="url" id="image" placeholder="https://... (Oswa kite l vid)">
 
             <button class="submit-btn" onclick="saveMovieToFirebase()">Ajoute sou Sit la</button>
+
             <button class="cancel-btn" onclick="closeAddModal()">Anule</button>
+
             <div id="addMsg" style="margin-top:10px; font-size:12px; font-weight:bold;"></div>
+
         </div>
+
     </div>
 
     <!-- Modal Settings -->
@@ -624,7 +630,7 @@
         </div>
     </div>
 
-    <!-- Player Screen nan Plein Ekran Pwòp -->
+    <!-- Player Screen -->
     <div id="player-screen">
         <button class="netflix-back-btn" onclick="closePlayer()" title="Retounen">‹</button>
 
@@ -676,6 +682,27 @@
                 toast.classList.remove('show');
             }, 2500);
         }
+
+        /* Fonksyon ki rale imaj YouTube otomatikman si bwat imaj la vid */
+        function autoFetchThumbnail() {
+            const videoUrl = document.getElementById('video').value.trim();
+            const imageInput = document.getElementById('image');
+            const ytId = extractYouTubeId(videoUrl);
+
+            // Si se yon lyen YouTube epi bwat imaj la pa ranpli pa menm, mete imaj otomatik li
+            if (ytId && !imageInput.dataset.manualInput) {
+                imageInput.value = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+            }
+        }
+
+        // Si itilizatè a ekri pa menm nan bwat imaj la, nou sonje li pou nou pa siprime l
+        document.getElementById('image').addEventListener('input', function() {
+            if (this.value.trim() !== '') {
+                this.dataset.manualInput = "true";
+            } else {
+                delete this.dataset.manualInput;
+            }
+        });
 
         function selectProfile(type) {
             currentActiveProfile = type;
@@ -802,7 +829,6 @@
             return (match && match[1]) ? match[1] : null;
         }
 
-        /* Fòse Wotasyon Otomatik ak Plein Ekran sou mobil */
         function enableFullscreenAndRotate() {
             if (playerScreen.requestFullscreen) {
                 playerScreen.requestFullscreen().catch(() => {});
@@ -837,7 +863,6 @@
             if (ytId) {
                 videoPlayer.pause();
                 videoPlayer.style.display = 'none';
-                // Paramèt YouTube pou kache tout bagay nèt + autoplay
                 youtubeIframe.src = "https://www.youtube-nocookie.com/embed/" + ytId + "?autoplay=1&controls=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1";
                 iframeWrapper.style.display = 'block';
             } else {
@@ -990,13 +1015,25 @@
         function saveMovieToFirebase() {
             const category = document.getElementById('category').value;
             const title = document.getElementById('title').value;
-            let image = document.getElementById('image').value;
-            let video = document.getElementById('video').value;
+            let image = document.getElementById('image').value.trim();
+            let video = document.getElementById('video').value.trim();
             const msg = document.getElementById('addMsg');
 
-            if (!title || !image || !video) {
+            if (!title || !video) {
                 msg.style.color = "#ff4d4d";
-                msg.textContent = "⚠️ Tanpri ranpli tout kaz yo!";
+                msg.textContent = "⚠️ Tanpri ranpli tit ak lyen videyo a!";
+                return;
+            }
+
+            // Si bwat imaj la vid, epi se yon lyen YouTube, nou pran afich YouTube la otomatikman
+            const ytId = extractYouTubeId(video);
+            if (!image && ytId) {
+                image = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+            }
+
+            if (!image) {
+                msg.style.color = "#ff4d4d";
+                msg.textContent = "⚠️ Tanpri antre yon lyen imaj tou!";
                 return;
             }
 
@@ -1013,6 +1050,7 @@
                 document.getElementById('title').value = '';
                 document.getElementById('image').value = '';
                 document.getElementById('video').value = '';
+                delete document.getElementById('image').dataset.manualInput;
                 setTimeout(() => { closeAddModal(); }, 1000);
             }).catch((err) => {
                 msg.style.color = "#ff4d4d";
